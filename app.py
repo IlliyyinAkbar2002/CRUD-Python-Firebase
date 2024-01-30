@@ -39,15 +39,28 @@ def update():
         "name": name,
         "age": age
     }
-    db.collection("default").document(name).update(data)
+    db.collection("default").document(name).set(data, merge=True)
     print("Data updated")
 
 
 def delete():
     print("Delete data")
-    name = input("Name: ")
-    db.collection("default").document(name).delete()
-    print("Data deleted")
+    default = db.collection("default").get()
+    for user in default:
+        print(user.id, user.to_dict())
+
+    name_to_delete = input("Name: ")
+    # Query the collection for documents where the 'name' field matches the input
+    matching_docs = db.collection("default").where(
+        'name', '==', name_to_delete).get()
+
+    if matching_docs:
+        for doc in matching_docs:
+            # Delete the document using its document ID
+            db.collection("default").document(doc.id).delete()
+            print(f"Document with ID {doc.id} deleted")
+    else:
+        print("No matching document found with the name provided")
 
 
 def main():
